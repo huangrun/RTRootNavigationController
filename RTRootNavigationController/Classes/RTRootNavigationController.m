@@ -731,7 +731,9 @@ __attribute((overloadable)) static inline UIViewController *RTSafeWrapViewContro
 
     if (self.viewControllers.count > 0) {
         //统一设置push时隐藏tabBar huangrun
-        viewController.hidesBottomBarWhenPushed = YES;
+        if (self.viewControllers.count == 1) {//解决部分版本如iOS14.0上的多级导航栏popToRoot时导致的tabBar消失的问题 步骤1 huangrun
+            viewController.hidesBottomBarWhenPushed = YES;
+        }
         
         UIViewController *currentLast = RTSafeUnwrapViewController(self.viewControllers.lastObject);
         [super pushViewController:RTSafeWrapViewController(viewController,
@@ -742,6 +744,7 @@ __attribute((overloadable)) static inline UIViewController *RTSafeWrapViewContro
                          animated:animated];
     }
     else {
+        viewController.hidesBottomBarWhenPushed = NO;//解决部分版本如iOS14.0上的多级导航栏popToRoot时导致的tabBar消失的问题 步骤2 huangrun
         [super pushViewController:RTSafeWrapViewController(viewController, viewController.rt_navigationBarClass)
                          animated:animated];
     }
@@ -951,7 +954,7 @@ __attribute((overloadable)) static inline UIViewController *RTSafeWrapViewContro
         else if (!viewController.rt_hasSetInteractivePop) {
             viewController.rt_disableInteractivePop = NO;
         }
-        //修复popToRoot时root控制器显示返回按钮的问题 步骤1 huangrun
+        //修复popToRoot时root控制器导航栏显示返回按钮的问题 步骤1 huangrun
         //[self _installsLeftBarButtonItemIfNeededForViewController:viewController];
     }
     
@@ -971,7 +974,7 @@ __attribute((overloadable)) static inline UIViewController *RTSafeWrapViewContro
     // fix #258 https://github.com/rickytan/RTRootNavigationController/issues/258
     // animated 为 NO 时的时序不太对，手动触发 viewDidLoad
     
-    //修复popToRoot时root控制器显示返回按钮的问题 步骤2 huangrun
+    //修复popToRoot时root控制器导航栏显示返回按钮的问题 步骤2 huangrun
     if (!isRootVC && viewController.isViewLoaded) {
         [self _installsLeftBarButtonItemIfNeededForViewController:viewController];
     }
